@@ -13,7 +13,9 @@ data = {
     'participate_time': [],  # 存储捐款时间
     'id': [],  # 存储捐款编号:
     'feedback': [],  # 存储就是祝福语啥的，对应类型为：0
-    'URL': []  # 存照片
+    'URL': [], # 存照片
+    'donType': [], # 存捐款类型
+    'donNum': []  # 存数量
 }
 
 
@@ -27,22 +29,28 @@ def scrape_page(url):
 
     # 获取表格的内容
     div = soup.find_all('div', {'class': "listBody"})   # 捐款者
-    td = soup.find_all('td', {'class': "w50"})   # 捐款者
-    lis = td[0].find_all('td', {'class': "tit1"})
-    tr = td[0].find_all('td', {'class': "tit1"})
+    # lis = div[0].find_all('tr')
+    # 捐款者数据，包含：捐赠者、类型、编号、认捐信息、时间
+    td = div[0].find_all('tr', class_=lambda c: c not in ['he'])
+
 
     # 遍历获取到的 lis 列表，并从中抓取链接和标题
     for li in td:
-        print("", li.find_all('a')[0].get("href"))
-        print(li.find_all('a')[0].get_text(strip=True))
-        # 存储获得的数据
+        tds = li.find_all('td')
         link = li.find_all('a')[0].get("href")
-        alumniName = li.find_all('a')[0].get_text(strip=True)
+        # 存储获得的数据
+        if len(tds) >= 4:
+            alumniName = tds[0].find('a').get_text(strip=True)  # 提取班级信息
+            donType = tds[1].find('a').get_text(strip=True)  # 提取捐款类型
+            doId = tds[2].find('a').get_text(strip=True)  # 提取捐款ID
+            donNum = tds[3].find('a').get_text(strip=True)  # 提取捐赠物品数量
+            print(f"Alumni Name: {alumniName}, Donation Type: {donType}, Donation ID: {doId}, Donation Number: {donNum}")
+
         # 首页是：info/1014/15340.htm样式，
         # 部分内容存在：../info/1014/15340.htm样式的
         link = re.sub(r"^\.\./", r"", link)
         # 正则表达式 r"^\.\./", "/" 将路径前面出现的 "../" 替换为""，即全消除
-        full_link = 'https://alumni.hueb.edu.cn/' + link  # 完整链接
+        full_link = 'https://alumni.hueb.edu.cn' + link  # 完整链接
         print(f"Scraping details from: {full_link}")
         scrape_details(full_link, alumniName)  # 访问具体页面并抓取详细内容
 
