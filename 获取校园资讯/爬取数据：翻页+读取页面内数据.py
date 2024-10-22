@@ -31,30 +31,24 @@ def scrape_page(url):
     # 读取给定 url 的 html 代码
     response = urllib.request.urlopen(url)
     content = response.read().decode('utf-8')
-
     # 转换读取到的 html 文档
     soup = BeautifulSoup(content, 'html.parser', from_encoding='utf-8')
-
     # 获取表格的内容
-    td = soup.find_all('td', {'class': "list"})
-    lis = td[0].find_all('td', {'class': "tit1"})
-
+    lis = soup.find_all('td', {'class': "tit1"})
     # 遍历获取到的 lis 列表，并从中抓取链接和标题
     for li in lis:
         print("", li.find_all('a')[0].get("href"))
         # 首页是：info/1014/15340.htm样式，
         # 部分内容存在：../info/1014/15340.htm样式的
         print(li.find_all('a')[0].get("title"))
-
         link = li.find_all('a')[0].get("href")
         link = re.sub(r"^\.\./", r"", link)
         # 正则表达式 r"^\.\./", "/" 将路径前面出现的 "../" 替换为""，即全消除
         full_link = 'https://news.hueb.edu.cn/' + link  # 完整链接
         print(f"Scraping details from: {full_link}")
         scrape_details(full_link)  # 访问具体页面并抓取详细内容
-
     # 查找下一页的链接
-    next_page = soup.find('a', text='下页')  # 假设下一页的按钮文字是 "下一页"
+    next_page = soup.find('a', text='next')  # 假设下一页的按钮文字是 "下一页"
     if next_page:
         next_page_url = next_page.get('href')
         if next_page_url:
@@ -69,12 +63,9 @@ def scrape_details(detail_url):
     response = urllib.request.urlopen(detail_url)
     content = response.read().decode('utf-8')
     soup = BeautifulSoup(content, 'html.parser', from_encoding='utf-8')
-
-    # 假设具体页面的标题和正文在如下标签中
-    # title = soup.find('h1').get_text()  # 页面标题（根据具体页面结构调整）
-    # content_paragraphs = soup.find_all('p')  # 具体页面的内容
+    # 具体页面的内容在如下标签中
     content_paragraphs = soup.find_all('div', {'class': "v_news_content"})
-
+    time_element = soup.find_all('td', {'class': "timecount"})
     # 输出详细内容
     # print(f"Title: {title}")
     # print("Content:未格式化",content_paragraphs) 对数据进行格式化
@@ -102,18 +93,10 @@ print("=========================获取到的格式化图片url，完结=========
 # 起始页 URL，对应的url替换，递归实现查询
 def scrape_all_pages(start_url, start_num):
     next_url = start_url
-
     while next_url:
         nextUrl = scrape_page(next_url)
-        if start_num == 1:
-            # 首页时获取到的下一页标识：带有：xywh标识，后续页没有
-            next_url = 'https://news.hueb.edu.cn/' + nextUrl
-        else:
-            next_url = 'https://news.hueb.edu.cn/xywh/' + nextUrl
-
+        next_url = 'https://news.hueb.edu.cn/xywh/' + nextUrl
         start_num += 1
-
-        print("=========================下一页单纯地址不带url：", next_url, "=========================")
 
 
 # 起始页 URL
