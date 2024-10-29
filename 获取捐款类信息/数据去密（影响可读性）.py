@@ -29,6 +29,6 @@ for row in range(2, sheet.max_row + 1):
         sheet.cell(row=row, column=2, value=''.join(encrypted_name))
 
 # 保存加密后的 Excel
-workbook.save('encrypted_alumni2.xlsx')
+workbook.save('encrypted_alumniNoRead.xlsx')
 
 # 此方法虽然可行，但整体影响可读性
